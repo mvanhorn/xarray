@@ -3725,6 +3725,24 @@ class TestDataArray:
         expected_df = arr_multi_single.to_series().to_frame()
         assert expected_df.equals(actual_df)
 
+    def test_to_dataframe_preserves_indexed_coordinate_not_in_index(self) -> None:
+        arr = DataArray(
+            [[1, 2], [3, 4]],
+            dims=("time", "pos"),
+            coords={"time": ["a", "b"], "pf": ("pos", [10, 20])},
+            name="data",
+        ).set_xindex("pf")
+        index = pd.MultiIndex.from_product(
+            [["a", "b"], range(2)], names=["time", "pos"]
+        )
+        expected = pd.DataFrame(
+            {"pf": [10, 20, 10, 20], "data": [1, 2, 3, 4]}, index=index
+        )
+
+        actual = arr.to_dataframe()
+
+        pd.testing.assert_frame_equal(actual, expected)
+
     def test_to_dataframe_0length(self) -> None:
         # regression test for #3008
         arr_np = np.random.randn(4, 0)

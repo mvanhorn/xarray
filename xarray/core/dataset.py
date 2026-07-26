@@ -7294,10 +7294,15 @@ class Dataset(
     def _to_dataframe(self, ordered_dims: Mapping[Any, int]):
         from xarray.core.extension_array import PandasExtensionArray
 
-        # All and only non-index arrays (whether data or coordinates) should
-        # become columns in the output DataFrame. Excluding indexes rather
-        # than dims handles the case of a MultiIndex along a single dimension.
-        columns_in_order = [k for k in self.variables if k not in self.xindexes]
+        index = self.coords.to_index([*ordered_dims])
+        index_coord_names = set()
+        for dim in ordered_dims:
+            if dim in self.xindexes:
+                index_coord_names.update(self.xindexes.get_all_coords(dim))
+
+        # All and only arrays not represented in the pandas index (whether data
+        # or coordinates) should become columns in the output DataFrame.
+        columns_in_order = [k for k in self.variables if k not in index_coord_names]
         non_extension_array_columns = [
             k
             for k in columns_in_order
@@ -7322,7 +7327,6 @@ class Dataset(
             self._variables[k].set_dims(ordered_dims).values.reshape(-1)
             for k in non_extension_array_columns
         ]
-        index = self.coords.to_index([*ordered_dims])
         broadcasted_df = pd.DataFrame(
             {
                 **dict(zip(non_extension_array_columns, data, strict=True)),
@@ -7353,9 +7357,9 @@ class Dataset(
     def to_dataframe(self, dim_order: Sequence[Hashable] | None = None) -> pd.DataFrame:
         """Convert this dataset into a pandas.DataFrame.
 
-        Non-index variables in this dataset form the columns of the
-        DataFrame. The DataFrame is indexed by the Cartesian product of
-        this dataset's indices.
+        Variables not represented in the DataFrame's index form its columns.
+        The DataFrame is indexed by the Cartesian product of this dataset's
+        dimension indices.
 
         Parameters
         ----------

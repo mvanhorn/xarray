@@ -30,6 +30,9 @@ Bug Fixes
   differ from the dtype returned by the matching numpy-backed bottleneck path,
   notably ``object`` instead of ``float64`` for boolean inputs.
   By `Matthew Rocklin <https://github.com/mrocklin>`_.
+- Preserve indexed coordinates as columns in :py:meth:`Dataset.to_dataframe`
+  and :py:meth:`DataArray.to_dataframe` when they are not represented in the
+  resulting DataFrame index (:issue:`10851`).
 
 
 Documentation

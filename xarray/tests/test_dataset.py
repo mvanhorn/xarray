@@ -5438,6 +5438,22 @@ class TestDataset:
         expected = pd.DataFrame([[]], index=idx)
         assert expected.equals(actual), (expected, actual)
 
+    def test_to_dataframe_preserves_indexed_coordinate_not_in_index(self) -> None:
+        ds = Dataset(
+            {"data": (("time", "pos"), [[1, 2], [3, 4]])},
+            coords={"time": ["a", "b"], "pf": ("pos", [10, 20])},
+        ).set_xindex("pf")
+        index = pd.MultiIndex.from_product(
+            [["a", "b"], range(2)], names=["time", "pos"]
+        )
+        expected = pd.DataFrame(
+            {"data": [1, 2, 3, 4], "pf": [10, 20, 10, 20]}, index=index
+        )
+
+        actual = ds.to_dataframe()
+
+        pd.testing.assert_frame_equal(actual, expected)
+
     def test_from_dataframe_categorical_dtype_index(self) -> None:
         cat = pd.CategoricalIndex(list("abcd"))
         df = pd.DataFrame({"f": [0, 1, 2, 3]}, index=cat)

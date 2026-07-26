@@ -3970,9 +3970,10 @@ class DataArray(
     ) -> pd.DataFrame:
         """Convert this array and its coordinates into a tidy pandas.DataFrame.
 
-        The DataFrame is indexed by the Cartesian product of index coordinates
-        (in the form of a :py:class:`pandas.MultiIndex`). Other coordinates are
-        included as columns in the DataFrame.
+        The DataFrame is indexed by the Cartesian product of this array's
+        dimension indices (in the form of a :py:class:`pandas.MultiIndex`).
+        Coordinates not represented in the DataFrame's index are included as
+        columns.
 
         For 1D and 2D DataArrays, see also :py:func:`DataArray.to_pandas` which
         doesn't rely on a MultiIndex to build the DataFrame.
